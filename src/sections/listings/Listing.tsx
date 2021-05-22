@@ -1,10 +1,14 @@
 import { useQuery, useMutation } from 'react-apollo';
 import { gql } from 'apollo-boost';
+import { Alert, Avatar, Button, List, Spin } from 'antd';
+import './styles/Listings.css';
+
 import { Listings as ListingData } from './__generated__/Listings';
 import {
 	DeleteListing as DeleteListingsData,
 	DeleteListingVariables as DeleteListingsVariables,
 } from './__generated__/DeleteListing';
+import { ListingsSkeleton } from './components';
 interface Props {
 	title: string;
 }
@@ -45,28 +49,51 @@ export const Listings = ({ title }: Props) => {
 	const listings = data ? data.listings : null;
 
 	const listingsList = listings ? (
-		<ul>
-			{listings.map((listing) => (
-				<li key={listing.id}>
-					{listing.title}
-					<button onClick={() => handleDeleteListing(listing.id)}>Delete</button>
-				</li>
-			))}
-		</ul>
+		<List
+			itemLayout="horizontal"
+			dataSource={listings}
+			renderItem={(listing) => (
+				<List.Item
+					actions={[
+						<Button type="primary" onClick={() => handleDeleteListing(listing.id)}>
+							Delete
+						</Button>,
+					]}
+				>
+					<List.Item.Meta
+						description={listing.address}
+						avatar={<Avatar src={listing.image} size={48} shape="square" />}
+						title={listing.title}
+					/>
+				</List.Item>
+			)}
+		/>
 	) : null;
 
-	if (loading) return <h1>Loading.....</h1>;
-	if (error) return <h1>Something went wrong, please try again later</h1>;
+	if (loading)
+		return (
+			<div className="listings-wrap">
+				<ListingsSkeleton title={title} />
+			</div>
+		);
+	if (error)
+		return (
+			<div className="listings-wrap">
+				<ListingsSkeleton title={title} error />
+			</div>
+		);
 
-	const deleteListingMessage = deleteListLoading ? <h4>Deletion in progress</h4> : null;
-	const deleteListingError = deleteListError ? <h4>Something went wrong in the deletion process</h4> : null;
+	const deleteListingErrorAlert = deleteListError ? (
+		<Alert type="error" message="Something went wrong in the deletion process" />
+	) : null;
 
 	return (
-		<div>
-			<h1>{title}</h1>
-			{listingsList}
-			{deleteListingMessage}
-			{deleteListingError}
+		<div className="listings-wrap">
+			<Spin spinning={deleteListLoading}>
+				{deleteListingErrorAlert}
+				<h1>{title}</h1>
+				{listingsList}
+			</Spin>
 		</div>
 	);
 };
