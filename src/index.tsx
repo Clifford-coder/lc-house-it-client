@@ -1,20 +1,29 @@
 import { render } from 'react-dom';
 import ApolloClient from 'apollo-boost';
 import { ApolloProvider } from 'react-apollo';
-import { Listings } from './sections';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { Home, Listings, Host, User, Listing, NotFound } from './sections';
 import { baseUrl } from './lib/api';
 import './styles/index.css';
 
 const client = new ApolloClient({ uri: `${baseUrl}/api` });
 
-render(
-	<ApolloProvider client={client}>
-		<Listings title="Tiny House Listings" />
-	</ApolloProvider>,
-	document.getElementById('root')
+const App = () => (
+  <Router>
+    <Switch>
+      <Route path="/" exact component={Home} />
+      <Route path="/host" exact component={Host} />
+      <Route path="/listing/:id" exact component={Listing} />
+      <Route path="/listings/:location" exact component={Listings} />
+      <Route path="/user/:id" exact component={User} />
+      <Route path="*" component={NotFound} />
+    </Switch>
+  </Router>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-// reportWebVitals();
+render(
+  <ApolloProvider client={client}>
+    <App />
+  </ApolloProvider>,
+  document.getElementById('root')
+);
